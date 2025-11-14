@@ -128,6 +128,8 @@
             align-items: center;
             gap: 8px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            min-height: 40px;
+            justify-content: center;
         }
         
         .btn-primary {
@@ -244,18 +246,68 @@
             display: inline-block;
         }
         
+        /* CORREÇÃO DOS BOTÕES */
         .action-buttons {
             display: flex;
-            gap: 5px;
+            gap: 8px;
+            justify-content: center;
+            align-items: center;
         }
         
         .action-btn {
-            padding: 6px 12px;
+            padding: 8px 12px;
             border: none;
             border-radius: 6px;
             cursor: pointer;
             font-size: 0.85rem;
             transition: all 0.3s;
+            min-width: 70px;
+            text-align: center;
+            font-weight: 600;
+            min-height: 40px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .action-btn.btn-warning {
+            background: var(--axia-warning);
+            color: white;
+        }
+        
+        .action-btn.btn-danger {
+            background: var(--axia-danger);
+            color: white;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            opacity: 0.9;
+        }
+        
+        /* BOTÕES DA TOOLBAR MAIS COMPACTOS */
+        .toolbar-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .toolbar-actions .btn {
+            padding: 10px 15px;
+            font-size: 0.9rem;
+            min-width: 110px;
+        }
+        
+        /* Botão de busca mais compacto */
+        .search-container .btn {
+            min-width: 100px;
+            padding: 10px 15px;
+        }
+        
+        /* Container de arquivo mais compacto */
+        .file-input-container .btn {
+            min-width: 130px;
         }
         
         /* Modal Styles */
@@ -352,20 +404,27 @@
             gap: 15px;
         }
         
+        /* PAGINAÇÃO COMPACTA */
         .pagination {
             display: flex;
             justify-content: center;
             margin-top: 20px;
-            gap: 5px;
+            gap: 4px;
         }
         
         .pagination button {
-            padding: 10px 15px;
+            padding: 8px 12px;
             border: 1px solid #ddd;
             background-color: white;
             cursor: pointer;
-            border-radius: 8px;
+            border-radius: 6px;
             transition: all 0.3s;
+            font-size: 0.9rem;
+            min-width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .pagination button.active {
@@ -376,6 +435,13 @@
         
         .pagination button:hover:not(.active) {
             background-color: var(--axia-light);
+            border-color: var(--axia-secondary);
+        }
+        
+        .pagination button:disabled {
+            background-color: #f5f5f5;
+            color: #999;
+            cursor: not-allowed;
         }
         
         .toolbar {
@@ -384,11 +450,6 @@
             margin-bottom: 20px;
             flex-wrap: wrap;
             gap: 15px;
-        }
-        
-        .toolbar-actions {
-            display: flex;
-            gap: 10px;
         }
         
         .file-input-container {
@@ -542,6 +603,13 @@
             
             .action-buttons {
                 flex-direction: column;
+                gap: 5px;
+            }
+            
+            .action-btn {
+                min-width: 60px;
+                font-size: 0.8rem;
+                padding: 6px 8px;
             }
             
             .toolbar {
@@ -550,10 +618,29 @@
             
             .toolbar-actions {
                 flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .toolbar-actions .btn {
+                min-width: 100px;
+                font-size: 0.85rem;
             }
             
             .dashboard {
                 grid-template-columns: 1fr;
+            }
+            
+            /* Paginação mais compacta no mobile */
+            .pagination {
+                flex-wrap: wrap;
+                gap: 2px;
+            }
+            
+            .pagination button {
+                min-width: 35px;
+                height: 35px;
+                padding: 5px 8px;
+                font-size: 0.8rem;
             }
         }
     </style>
@@ -589,12 +676,12 @@
                     <div class="stat-label">Situação Ativa</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value" id="suspensas-count">0</div>
-                    <div class="stat-label">Situação Suspensa</div>
-                </div>
-                <div class="stat-card">
                     <div class="stat-value" id="baixadas-count">0</div>
                     <div class="stat-label">Situação Baixada</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="suspensas-count">0</div>
+                    <div class="stat-label">Situação Suspensa</div>
                 </div>
             </div>
             
@@ -646,10 +733,10 @@
                         <span>📥</span> Exportar Excel
                     </button>
                     <div class="file-input-container">
-                        <button class="btn btn-success" id="importBtn">
-                            <span>📤</span> Importar Excel
+                        <button class="btn btn-success" id="importBackupBtn">
+                            <span>📤</span> Importar Backup
                         </button>
-                        <input type="file" id="fileInput" accept=".xlsx, .xls">
+                        <input type="file" id="backupInput" accept=".json">
                     </div>
                     <button class="btn btn-accent" id="backupBtn">
                         <span>💾</span> Fazer Backup
@@ -734,7 +821,7 @@
                     
                     <div class="form-group">
                         <label for="fantasia">FANTASIA</label>
-                        <input type="text" id="fantasia" name="fantasia">
+                            <input type="text" id="fantasia" name="fantasia">
                     </div>
                     
                     <div class="form-row">
@@ -956,6 +1043,7 @@
         let editingIndex = -1;
         let filteredData = [...cnpjData];
         let charts = {};
+        let searchTimeout;
 
         // Elementos DOM
         const tableBody = document.getElementById('tableBody');
@@ -970,8 +1058,8 @@
         const searchBtn = document.getElementById('searchBtn');
         const pagination = document.getElementById('pagination');
         const exportBtn = document.getElementById('exportBtn');
-        const importBtn = document.getElementById('importBtn');
-        const fileInput = document.getElementById('fileInput');
+        const importBackupBtn = document.getElementById('importBackupBtn');
+        const backupInput = document.getElementById('backupInput');
         const backupBtn = document.getElementById('backupBtn');
         const alertContainer = document.getElementById('alertContainer');
         const navTabs = document.querySelectorAll('.nav-tab');
@@ -1000,16 +1088,17 @@
             cancelBtn.addEventListener('click', closeModalFunc);
             saveBtn.addEventListener('click', saveCnpj);
             searchBtn.addEventListener('click', performSearch);
-            searchInput.addEventListener('keyup', function(event) {
-                if (event.key === 'Enter') {
-                    performSearch();
-                }
+            
+            // Busca dinâmica ao digitar
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(performSearch, 300);
             });
             
-            // Event listeners para backup e Excel
+            // Event listeners para backup
             exportBtn.addEventListener('click', exportToExcel);
-            importBtn.addEventListener('click', () => fileInput.click());
-            fileInput.addEventListener('change', importFromExcel);
+            importBackupBtn.addEventListener('click', () => backupInput.click());
+            backupInput.addEventListener('change', importBackup);
             backupBtn.addEventListener('click', createBackup);
             
             // Event listeners para abas
@@ -1047,18 +1136,18 @@
             charts.situacao = new Chart(situacaoCtx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Ativa', 'Suspensa', 'Baixada'],
+                    labels: ['Ativa', 'Baixada', 'Suspensa'],
                     datasets: [{
                         data: [0, 0, 0],
                         backgroundColor: [
                             'rgba(67, 176, 42, 0.8)',
-                            'rgba(242, 169, 0, 0.8)',
-                            'rgba(228, 0, 43, 0.8)'
+                            'rgba(228, 0, 43, 0.8)',
+                            'rgba(242, 169, 0, 0.8)'
                         ],
                         borderColor: [
                             'rgba(67, 176, 42, 1)',
-                            'rgba(242, 169, 0, 1)',
-                            'rgba(228, 0, 43, 1)'
+                            'rgba(228, 0, 43, 1)',
+                            'rgba(242, 169, 0, 1)'
                         ],
                         borderWidth: 1
                     }]
@@ -1148,8 +1237,8 @@
             const matriz = cnpjData.filter(item => item.tipo === 'MATRIZ').length;
             const filial = cnpjData.filter(item => item.tipo === 'FILIAL').length;
             
-            // Gráfico de situação
-            charts.situacao.data.datasets[0].data = [ativas, suspensas, baixadas];
+            // Gráfico de situação (nova ordem)
+            charts.situacao.data.datasets[0].data = [ativas, baixadas, suspensas];
             charts.situacao.update();
             
             // Gráfico de tipo
@@ -1222,7 +1311,7 @@
             renderPagination();
         }
 
-        // Renderizar paginação
+        // Renderizar paginação compacta
         function renderPagination() {
             const totalPages = Math.ceil(filteredData.length / itemsPerPage);
             
@@ -1232,14 +1321,32 @@
             }
             
             let paginationHTML = '';
+            const maxVisiblePages = 5; // Máximo de páginas visíveis
             
             // Botão anterior
             if (currentPage > 1) {
-                paginationHTML += `<button class="page-btn" data-page="${currentPage - 1}">Anterior</button>`;
+                paginationHTML += `<button class="page-btn" data-page="${currentPage - 1}">‹</button>`;
             }
             
-            // Páginas
-            for (let i = 1; i <= totalPages; i++) {
+            // Lógica para páginas visíveis (mais compacta)
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+            
+            // Ajustar se estiver no final
+            if (endPage - startPage + 1 < maxVisiblePages) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            }
+            
+            // Primeira página + ellipsis se necessário
+            if (startPage > 1) {
+                paginationHTML += `<button class="page-btn" data-page="1">1</button>`;
+                if (startPage > 2) {
+                    paginationHTML += `<button class="page-btn" disabled>...</button>`;
+                }
+            }
+            
+            // Páginas do meio
+            for (let i = startPage; i <= endPage; i++) {
                 if (i === currentPage) {
                     paginationHTML += `<button class="page-btn active" data-page="${i}">${i}</button>`;
                 } else {
@@ -1247,15 +1354,23 @@
                 }
             }
             
+            // Última página + ellipsis se necessário
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    paginationHTML += `<button class="page-btn" disabled>...</button>`;
+                }
+                paginationHTML += `<button class="page-btn" data-page="${totalPages}">${totalPages}</button>`;
+            }
+            
             // Botão próximo
             if (currentPage < totalPages) {
-                paginationHTML += `<button class="page-btn" data-page="${currentPage + 1}">Próximo</button>`;
+                paginationHTML += `<button class="page-btn" data-page="${currentPage + 1}">›</button>`;
             }
             
             pagination.innerHTML = paginationHTML;
             
             // Adicionar event listeners aos botões de página
-            document.querySelectorAll('.page-btn').forEach(btn => {
+            document.querySelectorAll('.page-btn:not(:disabled)').forEach(btn => {
                 btn.addEventListener('click', function() {
                     currentPage = parseInt(this.getAttribute('data-page'));
                     renderTable();
@@ -1370,6 +1485,11 @@
             }
         }
 
+        // Normalizar CNPJ para busca (remove caracteres especiais)
+        function normalizeCNPJ(cnpj) {
+            return cnpj.replace(/[^\d]/g, '');
+        }
+
         // Realizar busca
         function performSearch() {
             const searchTerm = searchInput.value.toLowerCase();
@@ -1377,11 +1497,15 @@
             if (searchTerm.trim() === '') {
                 filteredData = [...cnpjData];
             } else {
-                filteredData = cnpjData.filter(item => 
-                    item.empresa.toLowerCase().includes(searchTerm) ||
-                    item.cnpj.includes(searchTerm) ||
-                    item.nome.toLowerCase().includes(searchTerm)
-                );
+                const normalizedSearch = normalizeCNPJ(searchTerm);
+                
+                filteredData = cnpjData.filter(item => {
+                    const normalizedItemCNPJ = normalizeCNPJ(item.cnpj);
+                    
+                    return item.empresa.toLowerCase().includes(searchTerm) ||
+                           normalizedItemCNPJ.includes(normalizedSearch) ||
+                           item.nome.toLowerCase().includes(searchTerm);
+                });
             }
             
             currentPage = 1;
@@ -1418,8 +1542,8 @@
             }
         }
 
-        // Importar do Excel
-        function importFromExcel(event) {
+        // Importar backup
+        function importBackup(event) {
             const file = event.target.files[0];
             if (!file) return;
             
@@ -1427,14 +1551,7 @@
             
             reader.onload = function(e) {
                 try {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    
-                    // Obter primeira planilha
-                    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-                    
-                    // Converter para JSON
-                    const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                    const jsonData = JSON.parse(e.target.result);
                     
                     if (jsonData.length > 0) {
                         // Substituir dados existentes
@@ -1448,17 +1565,17 @@
                         renderTable();
                         updateDashboard();
                         updateCharts();
-                        showAlert(`Dados importados com sucesso! ${jsonData.length} registros carregados.`, 'success');
+                        showAlert(`Backup importado com sucesso! ${jsonData.length} registros carregados.`, 'success');
                     } else {
-                        showAlert('O arquivo Excel não contém dados válidos.', 'danger');
+                        showAlert('O arquivo de backup não contém dados válidos.', 'danger');
                     }
                 } catch (error) {
-                    console.error('Erro ao importar do Excel:', error);
-                    showAlert('Erro ao importar do Excel. Verifique o formato do arquivo.', 'danger');
+                    console.error('Erro ao importar backup:', error);
+                    showAlert('Erro ao importar backup. Verifique o formato do arquivo.', 'danger');
                 }
             };
             
-            reader.readAsArrayBuffer(file);
+            reader.readAsText(file);
             
             // Limpar input de arquivo
             event.target.value = '';
