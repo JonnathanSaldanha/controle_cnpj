@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gerenciamento de CNPJ</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --light-color: #ecf0f1;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px 0;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        h1 {
+            font-size: 1.8rem;
+        }
+        
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+        
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+        
+        .btn-warning {
+            background-color: var(--warning-color);
+            color: white;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        
+        .search-container {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .search-container input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .table-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        
+        th {
+            background-color: var(--light-color);
+            font-weight: 600;
+        }
+        
+        tr:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .status-ativa {
+            color: var(--success-color);
+            font-weight: 600;
+        }
+        
+        .status-suspensa {
+            color: var(--warning-color);
+            font-weight: 600;
+        }
+        
+        .status-baixada {
+            color: var(--danger-color);
+            font-weight: 600;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .action-btn {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 50px auto;
+            width: 90%;
+            max-width: 800px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .modal-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--light-color);
+        }
+        
+        .modal-header h2 {
+            font-size: 1.4rem;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #777;
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+        }
+        
+        .modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 5px;
+        }
+        
+        .pagination button {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            background-color: white;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        
+        .pagination button.active {
+            background-color: var(--secondary-color);
+            color: white;
+            border-color: var(--secondary-color);
+        }
+        
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+            
+            th, td {
+                padding: 8px 10px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container header-content">
+            <h1>Sistema de Gerenciamento de CNPJ</h1>
+            <button class="btn btn-primary" id="addBtn">Adicionar Novo CNPJ</button>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Buscar por empresa, CNPJ ou nome...">
+            <button class="btn btn-primary" id="searchBtn">Buscar</button>
+        </div>
+        
+        <div class="table-container">
+            <table id="cnpjTable">
+                <thead>
+                    <tr>
+                        <th>EMPRESA</th>
+                        <th>CNPJ</th>
+                        <th>SITUAÇÃO</th>
+                        <th>TIPO</th>
+                        <th>NOME</th>
+                        <th>AÇÕES</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Dados serão inseridos aqui via JavaScript -->
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="pagination" id="pagination">
+            <!-- Paginação será inserida aqui via JavaScript -->
+        </div>
+    </div>
+    
+    <!-- Modal para Adicionar/Editar CNPJ -->
+    <div class="modal" id="cnpjModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Adicionar Novo CNPJ</h2>
+                <button class="close-btn" id="closeModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="cnpjForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="empresa">EMPRESA</label>
+                            <input type="text" id="empresa" name="empresa" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="cnpj">CNPJ</label>
+                            <input type="text" id="cnpj" name="cnpj" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="abertura">ABERTURA</label>
+                            <input type="date" id="abertura" name="abertura">
+                        </div>
+                        <div class="form-group">
+                            <label for="situacao">SITUAÇÃO</label>
+                            <select id="situacao" name="situacao">
+                                <option value="ATIVA">ATIVA</option>
+                                <option value="SUSPENSA">SUSPENSA</option>
+                                <option value="BAIXADA">BAIXADA</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="tipo">TIPO</label>
+                            <select id="tipo" name="tipo">
+                                <option value="MATRIZ">MATRIZ</option>
+                                <option value="FILIAL">FILIAL</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="nome">NOME</label>
+                            <input type="text" id="nome" name="nome">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="fantasia">FANTASIA</label>
+                        <input type="text" id="fantasia" name="fantasia">
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="inscricao_estadual">INSCRIÇÃO ESTADUAL</label>
+                            <input type="text" id="inscricao_estadual" name="inscricao_estadual">
+                        </div>
+                        <div class="form-group">
+                            <label for="inscricao_municipal">INSCRIÇÃO MUNICIPAL</label>
+                            <input type="text" id="inscricao_municipal" name="inscricao_municipal">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="natureza_juridica">NATUREZA JURÍDICA</label>
+                        <input type="text" id="natureza_juridica" name="natureza_juridica">
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cnae_principal">CNAE PRINCIPAL</label>
+                            <input type="text" id="cnae_principal" name="cnae_principal">
+                        </div>
+                        <div class="form-group">
+                            <label for="atividade_principal">ATIVIDADE PRINCIPAL</label>
+                            <input type="text" id="atividade_principal" name="atividade_principal">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="logradouro">LOGRADOURO</label>
+                        <input type="text" id="logradouro" name="logradouro">
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="numero">NÚMERO</label>
+                            <input type="text" id="numero" name="numero">
+                        </div>
+                        <div class="form-group">
+                            <label for="complemento">COMPLEMENTO</label>
+                            <input type="text" id="complemento" name="complemento">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="municipio">MUNICÍPIO</label>
+                            <input type="text" id="municipio" name="municipio">
+                        </div>
+                        <div class="form-group">
+                            <label for="bairro">BAIRRO</label>
+                            <input type="text" id="bairro" name="bairro">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="uf">UF</label>
+                            <input type="text" id="uf" name="uf" maxlength="2">
+                        </div>
+                        <div class="form-group">
+                            <label for="cep">CEP</label>
+                            <input type="text" id="cep" name="cep">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="data_situacao">DATA SITUAÇÃO</label>
+                        <input type="date" id="data_situacao" name="data_situacao">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="ultima_atualizacao">ÚLTIMA ATUALIZAÇÃO</label>
+                        <input type="datetime-local" id="ultima_atualizacao" name="ultima_atualizacao">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="motivo_situacao">MOTIVO SITUAÇÃO</label>
+                        <input type="text" id="motivo_situacao" name="motivo_situacao">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" id="cancelBtn">Cancelar</button>
+                <button class="btn btn-success" id="saveBtn">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dados iniciais (simulando o conteúdo do arquivo Excel)
+        let cnpjData = [
+            {
+                empresa: "ELETROBRAS",
+                cnpj: "00001180000126",
+                abertura: "1966-08-19",
+                situacao: "ATIVA",
+                tipo: "MATRIZ",
+                nome: "CENTRAIS ELETRICAS BRASILEIRAS SA ELETROBRAS",
+                fantasia: "ELETROBRAS",
+                inscricao_estadual: "13944520",
+                inscricao_municipal: "14439064",
+                natureza_juridica: "204-6 - Sociedade Anônima Aberta",
+                cnae_principal: "64.62-0-00",
+                atividade_principal: "Holdings de instituições não-financeiras",
+                logradouro: "AV GRACA ARANHA",
+                numero: "26",
+                complemento: "LOJ A",
+                municipio: "RIO DE JANEIRO",
+                bairro: "CENTRO",
+                uf: "RJ",
+                cep: "20.030-900",
+                data_situacao: "38659",
+                ultima_atualizacao: "2025-08-12T19:24:27.914Z",
+                motivo_situacao: ""
+            },
+            {
+                empresa: "ELETROBRAS",
+                cnpj: "00001180000207",
+                abertura: "1994-11-11",
+                situacao: "ATIVA",
+                tipo: "FILIAL",
+                nome: "CENTRAIS ELETRICAS BRASILEIRAS SA ELETROBRAS",
+                fantasia: "ELETROBRAS ESTABELECIMENTOS UNIFICADOS",
+                inscricao_estadual: "77410805",
+                inscricao_municipal: "189014",
+                natureza_juridica: "204-6 - Sociedade Anônima Aberta",
+                cnae_principal: "64.62-0-00",
+                atividade_principal: "Holdings de instituições não-financeiras",
+                logradouro: "R DA QUITANDA",
+                numero: "00196",
+                complemento: "LOJ A SALAS 201 A 2402 E ANEXO NO 25 ANDAR",
+                municipio: "RIO DE JANEIRO",
+                bairro: "CENTRO",
+                uf: "RJ",
+                cep: "20.091-005",
+                data_situacao: "03/11/2005",
+                ultima_atualizacao: "2025-05-21T19:23:11.158Z",
+                motivo_situacao: ""
+            },
+            {
+                empresa: "ELETROBRAS",
+                cnpj: "00001180000398",
+                abertura: "2010-01-22",
+                situacao: "SUSPENSA",
+                tipo: "FILIAL",
+                nome: "CENTRAIS ELETRICAS BRASILEIRAS SA ELETROBRAS",
+                fantasia: "ELETROBRAS - SUCURSAL PERU",
+                inscricao_estadual: "#N/A",
+                inscricao_municipal: "#N/A",
+                natureza_juridica: "204-6 - Sociedade Anônima Aberta",
+                cnae_principal: "64.62-0-00",
+                atividade_principal: "Holdings de instituições não-financeiras",
+                logradouro: "AVENIDA CAMILO REAL",
+                numero: "348",
+                complemento: "ANDAR 9 ED TORRE EL PILAR",
+                municipio: "EXTERIOR",
+                bairro: "SAN ISIDRO",
+                uf: "EX",
+                cep: "",
+                data_situacao: "30/08/2024",
+                ultima_atualizacao: "2025-05-11T23:59:59.000Z",
+                motivo_situacao: "PEDIDO DE BAIXA INDEFERIDA"
+            }
+        ];
+
+        // Variáveis globais
+        let currentPage = 1;
+        const itemsPerPage = 10;
+        let editingIndex = -1;
+        let filteredData = [...cnpjData];
+
+        // Elementos DOM
+        const tableBody = document.getElementById('tableBody');
+        const cnpjModal = document.getElementById('cnpjModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const cnpjForm = document.getElementById('cnpjForm');
+        const addBtn = document.getElementById('addBtn');
+        const closeModal = document.getElementById('closeModal');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const saveBtn = document.getElementById('saveBtn');
+        const searchInput = document.getElementById('searchInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const pagination = document.getElementById('pagination');
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            renderTable();
+            setupEventListeners();
+        });
+
+        // Configurar event listeners
+        function setupEventListeners() {
+            addBtn.addEventListener('click', openAddModal);
+            closeModal.addEventListener('click', closeModalFunc);
+            cancelBtn.addEventListener('click', closeModalFunc);
+            saveBtn.addEventListener('click', saveCnpj);
+            searchBtn.addEventListener('click', performSearch);
+            searchInput.addEventListener('keyup', function(event) {
+                if (event.key === 'Enter') {
+                    performSearch();
+                }
+            });
+        }
+
+        // Renderizar tabela
+        function renderTable() {
+            tableBody.innerHTML = '';
+            
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageData = filteredData.slice(startIndex, endIndex);
+            
+            pageData.forEach((item, index) => {
+                const row = document.createElement('tr');
+                
+                // Determinar classe de status
+                let statusClass = '';
+                if (item.situacao === 'ATIVA') statusClass = 'status-ativa';
+                else if (item.situacao === 'SUSPENSA') statusClass = 'status-suspensa';
+                else if (item.situacao === 'BAIXADA') statusClass = 'status-baixada';
+                
+                row.innerHTML = `
+                    <td>${item.empresa}</td>
+                    <td>${formatCNPJ(item.cnpj)}</td>
+                    <td class="${statusClass}">${item.situacao}</td>
+                    <td>${item.tipo}</td>
+                    <td>${item.nome}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn btn-warning edit-btn" data-index="${startIndex + index}">Editar</button>
+                            <button class="action-btn btn-danger delete-btn" data-index="${startIndex + index}">Excluir</button>
+                        </div>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+            
+            // Adicionar event listeners aos botões de ação
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const index = parseInt(this.getAttribute('data-index'));
+                    openEditModal(index);
+                });
+            });
+            
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const index = parseInt(this.getAttribute('data-index'));
+                    deleteCnpj(index);
+                });
+            });
+            
+            renderPagination();
+        }
+
+        // Renderizar paginação
+        function renderPagination() {
+            const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+            
+            if (totalPages <= 1) {
+                pagination.innerHTML = '';
+                return;
+            }
+            
+            let paginationHTML = '';
+            
+            // Botão anterior
+            if (currentPage > 1) {
+                paginationHTML += `<button class="page-btn" data-page="${currentPage - 1}">Anterior</button>`;
+            }
+            
+            // Páginas
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === currentPage) {
+                    paginationHTML += `<button class="page-btn active" data-page="${i}">${i}</button>`;
+                } else {
+                    paginationHTML += `<button class="page-btn" data-page="${i}">${i}</button>`;
+                }
+            }
+            
+            // Botão próximo
+            if (currentPage < totalPages) {
+                paginationHTML += `<button class="page-btn" data-page="${currentPage + 1}">Próximo</button>`;
+            }
+            
+            pagination.innerHTML = paginationHTML;
+            
+            // Adicionar event listeners aos botões de página
+            document.querySelectorAll('.page-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    currentPage = parseInt(this.getAttribute('data-page'));
+                    renderTable();
+                });
+            });
+        }
+
+        // Abrir modal para adicionar
+        function openAddModal() {
+            modalTitle.textContent = 'Adicionar Novo CNPJ';
+            cnpjForm.reset();
+            editingIndex = -1;
+            cnpjModal.style.display = 'block';
+        }
+
+        // Abrir modal para editar
+        function openEditModal(index) {
+            modalTitle.textContent = 'Editar CNPJ';
+            const item = filteredData[index];
+            
+            // Preencher formulário com os dados existentes
+            document.getElementById('empresa').value = item.empresa || '';
+            document.getElementById('cnpj').value = item.cnpj || '';
+            document.getElementById('abertura').value = item.abertura || '';
+            document.getElementById('situacao').value = item.situacao || '';
+            document.getElementById('tipo').value = item.tipo || '';
+            document.getElementById('nome').value = item.nome || '';
+            document.getElementById('fantasia').value = item.fantasia || '';
+            document.getElementById('inscricao_estadual').value = item.inscricao_estadual || '';
+            document.getElementById('inscricao_municipal').value = item.inscricao_municipal || '';
+            document.getElementById('natureza_juridica').value = item.natureza_juridica || '';
+            document.getElementById('cnae_principal').value = item.cnae_principal || '';
+            document.getElementById('atividade_principal').value = item.atividade_principal || '';
+            document.getElementById('logradouro').value = item.logradouro || '';
+            document.getElementById('numero').value = item.numero || '';
+            document.getElementById('complemento').value = item.complemento || '';
+            document.getElementById('municipio').value = item.municipio || '';
+            document.getElementById('bairro').value = item.bairro || '';
+            document.getElementById('uf').value = item.uf || '';
+            document.getElementById('cep').value = item.cep || '';
+            document.getElementById('data_situacao').value = item.data_situacao || '';
+            
+            // Formatar data para o campo datetime-local
+            if (item.ultima_atualizacao) {
+                const date = new Date(item.ultima_atualizacao);
+                const formattedDate = date.toISOString().slice(0, 16);
+                document.getElementById('ultima_atualizacao').value = formattedDate;
+            } else {
+                document.getElementById('ultima_atualizacao').value = '';
+            }
+            
+            document.getElementById('motivo_situacao').value = item.motivo_situacao || '';
+            
+            editingIndex = index;
+            cnpjModal.style.display = 'block';
+        }
+
+        // Fechar modal
+        function closeModalFunc() {
+            cnpjModal.style.display = 'none';
+        }
+
+        // Salvar CNPJ (adicionar ou editar)
+        function saveCnpj() {
+            const formData = new FormData(cnpjForm);
+            const newCnpj = {};
+            
+            for (let [key, value] of formData.entries()) {
+                newCnpj[key] = value;
+            }
+            
+            if (editingIndex === -1) {
+                // Adicionar novo
+                cnpjData.push(newCnpj);
+                filteredData = [...cnpjData];
+            } else {
+                // Editar existente
+                cnpjData[editingIndex] = newCnpj;
+                filteredData[editingIndex] = newCnpj;
+            }
+            
+            renderTable();
+            closeModalFunc();
+        }
+
+        // Excluir CNPJ
+        function deleteCnpj(index) {
+            if (confirm('Tem certeza que deseja excluir este CNPJ?')) {
+                cnpjData.splice(index, 1);
+                filteredData = [...cnpjData];
+                
+                // Ajustar página atual se necessário
+                const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+                if (currentPage > totalPages) {
+                    currentPage = Math.max(1, totalPages);
+                }
+                
+                renderTable();
+            }
+        }
+
+        // Realizar busca
+        function performSearch() {
+            const searchTerm = searchInput.value.toLowerCase();
+            
+            if (searchTerm.trim() === '') {
+                filteredData = [...cnpjData];
+            } else {
+                filteredData = cnpjData.filter(item => 
+                    item.empresa.toLowerCase().includes(searchTerm) ||
+                    item.cnpj.includes(searchTerm) ||
+                    item.nome.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            currentPage = 1;
+            renderTable();
+        }
+
+        // Formatar CNPJ
+        function formatCNPJ(cnpj) {
+            if (!cnpj) return '';
+            return cnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+        }
+
+        // Fechar modal ao clicar fora dele
+        window.addEventListener('click', function(event) {
+            if (event.target === cnpjModal) {
+                closeModalFunc();
+            }
+        });
+    </script>
+</body>
+</html>
